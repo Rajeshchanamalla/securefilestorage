@@ -27,7 +27,7 @@ SECRET_KEY = "django-insecure--&$%-g7$#sw!yjh6^&7&r9)25!&iq@dj&act!sl@nb@$+ud80p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [*]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -51,7 +51,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "project2.urls"
@@ -78,7 +77,12 @@ WSGI_APPLICATION = "project2.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES["default"]=dj_database_url.parse("postgresql://secure_5ucg_user:SAcjSYL4TQiaZ20bbZ68z9S771lTho7Y@dpg-cvef57vnoe9s73ennkdg-a.oregon-postgres.render.com/secure_5ucg")
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
 
 # Password validation
@@ -114,14 +118,11 @@ USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+STATIC_URL = "static/"
 
-STATIC_URL = '/static/'
-STATIC_ROOT = 'staticfiles'
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    os.path.join(BASE_DIR,'static')
 ]
 
 STATIC_ROOT = os.path.join(BASE_DIR,'assets')
@@ -129,6 +130,7 @@ STATIC_ROOT = os.path.join(BASE_DIR,'assets')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 
