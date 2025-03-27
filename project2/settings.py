@@ -87,6 +87,7 @@ DATABASES = {
     }
 }
 
+DATABASES["default"]=dj_database_url.parse("postgresql://secure_5ucg_user:SAcjSYL4TQiaZ20bbZ68z9S771lTho7Y@dpg-cvef57vnoe9s73ennkdg-a.oregon-postgres.render.com/secure_5ucg")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -133,9 +134,15 @@ STATIC_ROOT = os.path.join(BASE_DIR,'assets')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+STATIC_URL = '/static/'
+STATIC_ROOT = 'staticfiles'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
