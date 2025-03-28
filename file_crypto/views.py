@@ -18,7 +18,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KEYS_DIR = os.path.join(BASE_DIR, "keys")  # Ensure keys are stored in the project folder
 PUBLIC_KEY_PATH = os.path.join(KEYS_DIR, "public_key.pem")
 PRIVATE_KEY_PATH = os.path.join(KEYS_DIR, "private_key.pem")
-ATTEMPT_LIMIT = 5  # Maximum allowed password attempts
+ATTEMPT_LIMIT = 3  # Maximum allowed password attempts
 
 # Ensure the `keys` directory exists
 os.makedirs(KEYS_DIR, exist_ok=True)
