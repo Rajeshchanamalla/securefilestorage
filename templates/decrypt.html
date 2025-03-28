@@ -43,8 +43,8 @@
                 </div>
 
                 <div id="passwordSection" class="mb-3 password-box">
-                    <label class="form-label">Enter Decryption Password (If Required):</label>
-                    <input type="password" name="password" class="form-control password-input" placeholder="Enter password (if applicable)" required>
+                    <label class="form-label">Enter Decryption Password :</label>
+                    <input type="password" name="password" class="form-control password-input" placeholder="Enter password" required>
                     <p id="passwordMessage" class="mt-2" style="display: none; color: #333333; font-size: 14px;">Password required for this combo</p>
                 </div>
 
@@ -236,7 +236,7 @@
         // Show/Hide Password Section based on algorithm
         if (algorithmSelect.value === "RSA") {
             passwordSection.style.display = "none"; // Always show for decryption due to required attribute
-            passwordInput.value = ""; // Clear password
+            passwordInput.value = " "; // Clear password
             passwordMessage.style.display = "none";
         } else {
             passwordSection.style.display = "block"; // Always show for decryption
