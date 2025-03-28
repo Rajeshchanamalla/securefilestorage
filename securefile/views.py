@@ -12,6 +12,31 @@ from .models import Profile  # Import Profile model
 def index(request):
     return render(request, 'index.html')
 
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
+def send_otp_email(email, otp):
+    try:
+        subject = "🔐 Your Secure OTP Code"
+        
+        # Render the HTML template
+        html_content = render_to_string("otp_email_template.html", {"otp": otp})
+        text_content = strip_tags(html_content)  # Fallback for plain text
+        
+        email_message = EmailMultiAlternatives(
+            subject, text_content, settings.EMAIL_HOST_USER, [email]
+        )
+        email_message.attach_alternative(html_content, "text/html")
+        email_message.send()
+
+        return JsonResponse({"status": "success", "message": "OTP sent successfully!"})
+
+    except Exception as e:
+        print(f"Email sending error: {e}")
+        return JsonResponse({"status": "error", "message": "Failed to send OTP. Please try again later."})
+
+
 def register(request):
     if request.method == "POST":
         action = request.POST.get("action")
@@ -42,15 +67,16 @@ def register(request):
             request.session.modified = True  
 
             print(f"Debug - Generated OTP: {otp} for {email}")  
-
+            
             try:
-                send_mail(
-                    "Your OTP Code",
-                    f"Your OTP for registration is {otp}",
-                    settings.EMAIL_HOST_USER,
-                    [email],
-                    fail_silently=False,
-                )
+                send_otp_email(email, otp)
+                # send_mail(
+                #     "Your OTP Code",
+                #     f"Your OTP for registration is {otp}",
+                #     settings.EMAIL_HOST_USER,
+                #     [email],
+                #     fail_silently=False,
+                # )
                 return JsonResponse({"status": "success", "message": "OTP sent successfully!"})
 
             except Exception as e:
