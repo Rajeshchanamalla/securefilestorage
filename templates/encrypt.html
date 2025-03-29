@@ -216,6 +216,13 @@
 </style>
 
 <script>
+    document.getElementById("encryptBtn").addEventListener("click", function() {
+    document.getElementById("fileInput").click(); // Open file manager
+});
+
+document.getElementById("fileInput").addEventListener("change", function() {
+    document.getElementById("encryptForm").submit(); // Submit form after file selection
+});
     function togglePasswordAndHybridOptions() {
         var algorithmSelect = document.getElementById("algorithmSelect");
         var hybridOptions = document.getElementById("hybridOptions");
