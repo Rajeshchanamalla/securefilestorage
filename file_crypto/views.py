@@ -1,9 +1,6 @@
 import os
-import subprocess
-import sys
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.db import models
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.decorators import login_required
 from .aes_crypto import aes_encrypt, aes_decrypt
@@ -12,19 +9,15 @@ from .blowfish_crypto import blowfish_encrypt, blowfish_decrypt
 from .hybrid_crypto import hybrid_encrypt, hybrid_decrypt
 from .models import DeletedFile, EncryptionHistory
 
-
-# Get the project base directory dynamically
+# RSA Key Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-KEYS_DIR = os.path.join(BASE_DIR, "keys")  # Ensure keys are stored in the project folder
+KEYS_DIR = os.path.join(BASE_DIR, "keys")
 PUBLIC_KEY_PATH = os.path.join(KEYS_DIR, "public_key.pem")
 PRIVATE_KEY_PATH = os.path.join(KEYS_DIR, "private_key.pem")
-ATTEMPT_LIMIT = 3  # Maximum allowed password attempts
-
-# Ensure the `keys` directory exists
 os.makedirs(KEYS_DIR, exist_ok=True)
 
-
-# Dictionary to track failed attempts
+# Attempt tracking for security
+ATTEMPT_LIMIT = 3
 failed_attempts = {}
 
 def ensure_rsa_keys():
@@ -33,11 +26,11 @@ def ensure_rsa_keys():
 
 def encrypt_file(request):
     try:
-        if request.method == "POST" and request.FILES['file']:
-            uploaded_file = request.FILES['file']
+        if request.method == "POST" and request.FILES.get("file"):
+            uploaded_file = request.FILES["file"]
             fs = FileSystemStorage()
             file_path = fs.save(uploaded_file.name, uploaded_file)
-            file_path = fs.path(file_path)
+            file_path = fs.path(file_path)  # Get full file path
 
             algorithm = request.POST.get("algorithm")
             password = request.POST.get("password", None)
@@ -63,6 +56,8 @@ def encrypt_file(request):
             )
 
             messages.success(request, f"File encrypted successfully: {file_path}.enc")
+        else:
+            messages.error(request, "Please select a file.")
 
         return render(request, "encrypt.html")
     except Exception as e:
@@ -71,11 +66,11 @@ def encrypt_file(request):
 
 def decrypt_file(request):
     try:
-        if request.method == "POST" and request.FILES['file']:
-            uploaded_file = request.FILES['file']
+        if request.method == "POST" and request.FILES.get("file"):
+            uploaded_file = request.FILES["file"]
             fs = FileSystemStorage()
             file_path = fs.save(uploaded_file.name, uploaded_file)
-            file_path = fs.path(file_path)
+            file_path = fs.path(file_path)  # Get full file path
 
             algorithm = request.POST.get("algorithm")
             password = request.POST.get("password", None)
@@ -83,6 +78,9 @@ def decrypt_file(request):
 
             if algorithm in ["RSA", "Hybrid"]:
                 ensure_rsa_keys()
+
+            if file_path not in failed_attempts:
+                failed_attempts[file_path] = 0
 
             success = False
             if algorithm == "AES":
@@ -95,6 +93,7 @@ def decrypt_file(request):
                 success = hybrid_decrypt(file_path, hybrid_choice, password)
 
             if success:
+                failed_attempts[file_path] = 0
                 EncryptionHistory.objects.create(
                     user=request.user,
                     filename=os.path.basename(file_path),
@@ -104,7 +103,19 @@ def decrypt_file(request):
                 )
                 messages.success(request, f"File decrypted successfully: {file_path}")
             else:
-                messages.error(request, "Decryption failed. Incorrect password or invalid file.")
+                failed_attempts[file_path] += 1
+                remaining_attempts = ATTEMPT_LIMIT - failed_attempts[file_path]
+
+                if remaining_attempts > 0:
+                    messages.error(request, f"Incorrect password. {remaining_attempts} attempts left.")
+                else:
+                    messages.error(request, "Too many failed attempts! File will be deleted permanently.")
+                    with open(file_path, "rb") as f:
+                        saved_file = fs.save(f"deleted_files/{os.path.basename(file_path)}", f)
+                        DeletedFile.objects.create(filename=os.path.basename(file_path), file=saved_file)
+                    os.remove(file_path)
+                    del failed_attempts[file_path]
+                    messages.error(request, "File deleted permanently due to multiple failed attempts.")
 
         return render(request, "decrypt.html")
     except Exception as e:
