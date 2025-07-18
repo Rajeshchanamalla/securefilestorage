@@ -10,14 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-
 import os
 from pathlib import Path
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -28,8 +26,15 @@ SECRET_KEY = "django-insecure--&$%-g7$#sw!yjh6^&7&r9)25!&iq@dj&act!sl@nb@$+ud80p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['securefilestorage.onrender.com']
+ALLOWED_HOSTS = [
+    'securefilestorage.onrender.com',
+    'www.securefilestorage.onrender.com',
+    'localhost',
+    '127.0.0.1',
+]
 
+# ✅ Print to confirm which hosts are actually active during deploy
+print("🚀 ALLOWED_HOSTS:", ALLOWED_HOSTS)
 
 # Application definition
 
@@ -46,13 +51,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "project2.urls"
@@ -60,7 +65,7 @@ ROOT_URLCONF = "project2.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR,'templates')],
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -75,7 +80,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "project2.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -85,67 +89,47 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-#DATABASES['default'] = dj_database_url.parse("postgresql://secure_5ucg_user:SAcjSYL4TQiaZ20bbZ68z9S771lTho7Y@dpg-cvef57vnoe9s73ennkdg-a.oregon-postgres.render.com/secure_5ucg")
+# If using PostgreSQL on Render, uncomment below and update with your DB URL:
+# DATABASES['default'] = dj_database_url.parse("your_postgres_url_here")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "Asia/Kolkata"
-
 USE_I18N = True
-
 USE_TZ = False
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT='staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
+# Media files
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT =BASE_DIR / 'media'
-
-
+# Email backend
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'chinnu14102004@gmail.com'  # Replace with your Gmail address
-EMAIL_HOST_PASSWORD = 'uwfk mgag zznl oisw'  # Use an app-specific password if 2FA is enabled
-DEFAULT_FROM_EMAIL = 'chinnu14102004@gmail.com'  # Sender email address
+EMAIL_HOST_PASSWORD = 'uwfk mgag zznl oisw'    # Use an app-specific password
+DEFAULT_FROM_EMAIL = 'chinnu14102004@gmail.com'
 
-
+# Default primary key field type
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
