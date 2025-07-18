@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 import random
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -8,34 +8,17 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from .models import Profile  # Import Profile model
+from django.template.loader import render_to_string
 
 def index(request):
     return render(request, 'index.html')
 
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-
 def send_otp_email(email, otp):
-    try:
-        subject = "🔐 Your Secure OTP Code"
-        
-        # Render the HTML template
-        html_content = render_to_string("otp_email_template.html", {"otp": otp})
-        text_content = strip_tags(html_content)  # Fallback for plain text
-        
-        email_message = EmailMultiAlternatives(
-            subject, text_content, settings.EMAIL_HOST_USER, [email]
-        )
-        email_message.attach_alternative(html_content, "text/html")
-        email_message.send()
-
-        return JsonResponse({"status": "success", "message": "OTP sent successfully!"})
-
-    except Exception as e:
-        print(f"Email sending error: {e}")
-        return JsonResponse({"status": "error", "message": "Failed to send OTP. Please try again later."})
-
+    subject = "🔒✨ Your Secure OTP Code"
+    html_content = render_to_string('otp_email_template.html', {'otp': otp})
+    email_msg = EmailMessage(subject, html_content, 'chinnu14102004@gmail.com', [email])
+    email_msg.content_subtype = "html"  # Ensures HTML formatting
+    email_msg.send()
 
 def register(request):
     if request.method == "POST":
@@ -67,16 +50,10 @@ def register(request):
             request.session.modified = True  
 
             print(f"Debug - Generated OTP: {otp} for {email}")  
-            
+
             try:
+                # Use the HTML email function instead of send_mail
                 send_otp_email(email, otp)
-                # send_mail(
-                #     "Your OTP Code",
-                #     f"Your OTP for registration is {otp}",
-                #     settings.EMAIL_HOST_USER,
-                #     [email],
-                #     fail_silently=False,
-                # )
                 return JsonResponse({"status": "success", "message": "OTP sent successfully!"})
 
             except Exception as e:
@@ -133,22 +110,15 @@ def signin(request):
 
     return render(request, "signin.html")
 
-
-
-
 def signout(request):
     logout(request)
     return redirect("signin")
-
-
 
 def get_user_profile(user):
     try:
         return Profile.objects.get(user=user)
     except Profile.DoesNotExist:
         return None
-
-
 
 @login_required
 def dashboard(request, username):
@@ -163,8 +133,6 @@ def dashboard(request, username):
         'user_profile': user_profile,
     }
     return render(request, 'dashboard.html', context)
-
-
 
 def success(request):
     return render(request,'success.html')
